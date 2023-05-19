@@ -15,7 +15,8 @@ class Job:
         if status:
             params['status'] = status
         # print(self.client.access_key)
-        data = self.client.get(f'/openapi/v1/job/list?accessKey={self.client.accesskey}', params=params)
+        params['accessKey'] = self.client.accesskey
+        data = self.client.get(f'/openapi/v1/job/list', params=params)
         return data
     
 
@@ -39,24 +40,24 @@ class Job:
         return job_list
     
     def delete(self, job_id):
-        data = self.client.post(f"/openapi/v1/job/del/{job_id}?accessKey={self.client.access_key}")
+        data = self.client.post(f"/openapi/v1/job/del/{job_id}", params=self.client.params)
         return data
     
     def terminate(self, job_id):
-        data = self.client.post(f'/openapi/v1/job/terminate/{job_id}?accessKey={self.client.access_key}')
+        data = self.client.post(f'/openapi/v1/job/terminate/{job_id}', params=self.client.params)
         return data
     
     def kill(self, job_id):
-        data = self.client.post(f'/openapi/v1/job/kill/{job_id}?accessKey={self.client.access_key}')
+        data = self.client.post(f'/openapi/v1/job/kill/{job_id}', params=self.client.params)
         return data
     
     def log(self, job_id):
-        data = self.client.get(f'/openapi/v1/job/{job_id}/log?accessKey={self.client.access_key}')
+        data = self.client.get(f'/openapi/v1/job/{job_id}/log', params=self.client.params)
         return data
 
     def insert(self, **kwargs):
         must_fill = ['oss_path', 'project_id', 'machine_type', 'command', 'platform', 'image_address']
-        must_fill = ['job_type', 'oss_path', 'project_id', 'scass_type', 'command', 'platform', 'image_name']
+        # must_fill = ['job_type', 'oss_path', 'project_id', 'scass_type', 'command', 'platform', 'image_name']
         for each in must_fill:
             if each not in kwargs:
                 raise ValueError(f'{each} is required when submitting job')
@@ -69,12 +70,12 @@ class Job:
             camel_data['logFiles'] = [camel_data['logFiles']]
         if self.client.debug:
             print(camel_data)
-        data = self.client.post(f"/openapi/v2/job/add?accessKey={self.client.access_key}", data=camel_data)
+        data = self.client.post(f"/openapi/v2/job/add", data=camel_data, params=self.client.params)
         return data
 
 
     def detail(self, job_id):
-        data = requests.get(f'/openapi/v1/job/{job_id}?accessKey={self.client.access_key}')
+        data = self.client.get(f'/openapi/v1/job/{job_id}', params=self.client.params)
         return data
     
     def create(self, project_id, name='', group_id=0):
@@ -86,21 +87,8 @@ class Job:
         if group_id:
             data['groupId'] = group_id
         try:
-            data = self.client.post(f'/openapi/v1/job/create?accessKey={self.client.access_key}', data=data)
+            data = self.client.post(f'/openapi/v1/job/create', data=data, params=self.params)
         except Exception as e:
             raise e
         return data
     
-
-if __name__ == '__main__': 
-    client = client.Client()
-    #client.login()
-    #client.generate_accesskey()
-    client.accesskey = "c30c4ca1bf354404301cd892be0f5008"
-    job = Job(client)
-    
-    # data = job.list_by_page(10781814)
-    # print(data.json())
-
-    data = job.detail(7160282)
-    print(data.json())

@@ -20,7 +20,7 @@ class Client:
         config.read(config_file_location_expand)
         self.base_url = config.get('Credentials', 'baseUrl')
         self.access_key = config.get('Credentials', 'accessKey')
-
+        self.params = {"accessKey": self.access_key}
 
     def post(self, url, data=None, headers=None, params=None, retry=5):
         return self._req('POST', url, data=data, headers=headers, params=params, retry=retry)
@@ -83,7 +83,7 @@ class Client:
             "name": name
         }
         resp = self.post(url="https://bohrium.dp.tech/bohrapi/v1/ak/add", data=post_data)
-        self.acces_skey = resp["accessKey"]
+        self.access_key = resp["accessKey"]
         return resp
 
 
@@ -96,17 +96,5 @@ class Client:
             "presence_penalty":0
         }
         
-        resp = self.post(f"/openapi/v1/chat/complete?accessKey={self.access_key}", data=post_data)
+        resp = self.post(f"/openapi/v1/chat/complete", data=post_data, params=self.params)
         return resp
-
-if __name__ == '__main__':
-    c = Client()
-    resp = c.chat("你好")
-    print(resp)
-    # config = configparser.ConfigParser()
-    # config.read(os.path.expanduser("~/.brmconfig"))
-
-    # base_url = config.get('Credentials', 'baseUrl')
-    # access_key = config.get('Credentials', 'accessKey')
-    # print('Base URL:', base_url)
-    # print('Access Key:', access_key)

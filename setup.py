@@ -2,7 +2,7 @@ from setuptools import setup
 import setuptools
 setup(
     name="bohrium-sdk",
-    version="0.0.6",
+    version="0.0.7",
     author="dingzhaohan",
     author_email="dingzh@dp.tech",
     url="https://github.com/dingzhoahan",
