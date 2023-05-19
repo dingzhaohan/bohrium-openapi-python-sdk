@@ -5,6 +5,12 @@ import urllib
 import getpass
 import time
 import configparser
+import re
+
+def check_email(email):
+    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'
+    if re.match(email_regex, email): return True
+    else: return False
 
 class RequestInfoException(Exception):
     pass
@@ -12,12 +18,15 @@ class RequestInfoException(Exception):
 class Client:
     def __init__(self, config_file_location='~/.brmconfig'):
         
-        config_file_location_expand = os.path.expanduser(config_file_location)
+        self.config_file_location_expand = os.path.expanduser(config_file_location)
 
-        if not os.path.exists(config_file_location_expand):
-            raise FileNotFoundError("Config File ~/.brmconfig not found!")
+        if not os.path.exists(self.config_file_location_expand):
+            print("Config File ~/.brmconfig not found! Now login to bohrium and generate it!")
+            self.login()
+            access_key_name = input("Please enter access_key name: ")
+            self.generate_access_key(access_key_name)
         config = configparser.ConfigParser()
-        config.read(config_file_location_expand)
+        config.read(self.config_file_location_expand)
         self.base_url = config.get('Credentials', 'baseUrl')
         self.access_key = config.get('Credentials', 'accessKey')
         self.params = {"accessKey": self.access_key}
@@ -74,16 +83,20 @@ class Client:
             'username': email,
             'password': password
         }
-        resp = self.post('https://bohrium.dp.tech/account_gw/login', post_data)
-        self.token = resp['token']
-        print("Login successfully!")
+        resp = requests.post('https://bohrium.dp.tech/account_gw/login', json=post_data).json().get("data", {})
+        self.token = resp.get('token', '')
+        if self.token: print("Login successfully!")
+        else: print("Login failed!")
 
     def generate_access_key(self, name="default"):
-        post_data = {
-            "name": name
-        }
-        resp = self.post(url="https://bohrium.dp.tech/bohrapi/v1/ak/add", data=post_data)
-        self.access_key = resp["accessKey"]
+        post_data = { "name": name }
+        headers = { 'Authorization': f'Bearer {self.token}' }
+        resp = requests.post(url="https://bohrium.dp.tech/bohrapi/v1/ak/add", json=post_data, headers=headers)
+        resp = resp.json().get("data", {})
+        self.access_key = resp.get("accessKey", "")
+        data = f"[Credentials]\nbaseUrl=https://openapi.dp.tech\naccessKey={self.access_key}"
+        with open(self.config_file_location_expand, 'w') as f:
+            f.write(data)
         return resp
 
 

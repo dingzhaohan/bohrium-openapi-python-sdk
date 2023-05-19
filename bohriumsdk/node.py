@@ -5,7 +5,8 @@ class Node:
         
 
     def list_server(self, project_id):
-        self.params["projectId"] = project_id
+        self.client.params["projectId"] = project_id
+        self.client.params["device"] = "vm"
         data = self.client.get('/openapi/v1/node/list', params=self.client.params)
         return data['items']
 
@@ -43,3 +44,9 @@ class Node:
         data = self.client.post(f'/openapi/v1/image/add', data=post_data, params=self.client.params)
         return data
 
+
+if __name__ == '__main__':
+    c = client.Client()
+    node = Node(c)
+    data = node.list_server(11481)
+    print(data)
