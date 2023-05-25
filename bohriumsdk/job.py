@@ -87,8 +87,20 @@ class Job:
         if group_id:
             data['groupId'] = group_id
         try:
-            data = self.client.post(f'/openapi/v1/job/create', data=data, params=self.params)
+            data = self.client.post(f'/openapi/v1/job/create', data=data, params=self.client.params)
         except Exception as e:
             raise e
         return data
     
+    def get_job_token(self, job_id):
+        url = f"https://bohrium.dp.tech/brm/v1/job/{job_id}/input/token"
+        headers = {
+            "Authorization": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODc0ODIwOTYsImlkZW50aXR5Ijp7Im9yZ0lkIjoxNTcsInVzZXJJZCI6MTU3fSwib3JpZ19pYXQiOjE2ODQ4OTAwOTZ9.g5aMIwQfWAhKMIxMptOE4jsz94OvQ1pKgigYI5VktC8akj9XnBl3PBBie_NETmqAhIRMmHuD7rEXIn-8U_SKQt3kdPj2i6q6opGzw8VOh4Wt5sBLjXZtZ_gdDPqD4YOM-khySMv_hYtK7yqJ-okmzcwVWIjH7GH-Yq09FY-tq8uZ2EDUwRlWsV0JFunSXqtDpH7zjj_kwbxPUjfH-DfTkX9cnhOLymFWVkdgsT4xJDgE8xCMvSUEk-1MRqW2GcQf3CZ3cNAAyQI1XSMEZtOBcHMZ14V-zOGTytgO2Y940R-RcC4ErBIKB_VMqvCWgDUumVexoe8z-0i8eGZ4b3knWA"
+        }
+        data = self.client.get(url=url, headers=headers)
+        print(data)
+
+if __name__ == "__main__":
+    c = client.Client()
+    j = Job(c)
+    j.get_job_token(4711474)

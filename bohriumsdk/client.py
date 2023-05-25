@@ -16,20 +16,55 @@ class RequestInfoException(Exception):
     pass
 
 class Client:
-    def __init__(self, config_file_location='~/.brmconfig'):
-        
-        self.config_file_location_expand = os.path.expanduser(config_file_location)
-
-        if not os.path.exists(self.config_file_location_expand):
-            print("Config File ~/.brmconfig not found! Now login to bohrium and generate it!")
-            self.login()
-            access_key_name = input("Please enter access_key name: ")
-            self.generate_access_key(access_key_name)
-        config = configparser.ConfigParser()
-        config.read(self.config_file_location_expand)
-        self.base_url = config.get('Credentials', 'baseUrl')
-        self.access_key = config.get('Credentials', 'accessKey')
-        self.params = {"accessKey": self.access_key}
+    def __init__(
+            self, 
+            api_version: str = 'v2',
+            email: str = "",
+            password: str = "",
+            base_url_v1: str = 'https://bohrium.dp.tech',
+            base_url_v2: str = "https://openapi.dp.tech",
+            token: str = "",
+            debug: bool = False,
+            use_config_file: bool = False,
+            config_file_location_v1: str = '~/.lebesgue_config.json',
+            config_file_location_v2: str ='~/.brmconfig'
+        ) -> None:
+        match api_version:
+            case "v1":
+                self.debug = debug
+                self.debug = os.getenv('LBG_CLI_DEBUG_PRINT', debug)
+                self.config = {}
+                config_file_location_expand = os.path.expanduser(config_file_location_v1)
+                file_data = {}
+                self.token = ''
+                self.user_id = None
+                if use_config_file:
+                    if os.path.exists(config_file_location_expand):
+                        with open(config_file_location_expand, 'r') as f:
+                            file_data = json.loads(f.read())
+                    self.config['email'] = file_data.get('email', email)
+                    self.config['password'] = file_data.get('password', password)
+                    self.base_url = file_data.get('base_url', base_url_v1)
+                else:
+                    self.config['email'] = email
+                    self.config['password'] = password
+                    self.base_url = base_url_v1
+                if token is not None:
+                    self.token = token
+                else:
+                    self._login()
+            case "v2":
+                self.config_file_location_expand = os.path.expanduser(config_file_location_v2)
+                if not os.path.exists(self.config_file_location_expand):
+                    print("Config File ~/.brmconfig not found! Now login to bohrium and generate it!")
+                    self.login()
+                    access_key_name = input("Please enter access_key name: ")
+                    self.generate_access_key(access_key_name)
+                config = configparser.ConfigParser()
+                config.read(self.config_file_location_expand)
+                self.base_url = config.get('Credentials', 'baseUrl')
+                self.access_key = config.get('Credentials', 'accessKey')
+                self.params = {"accessKey": self.access_key}
 
     def post(self, url, data=None, headers=None, params=None, retry=5):
         return self._req('POST', url, data=data, headers=headers, params=params, retry=retry)
@@ -108,6 +143,6 @@ class Client:
             "temperature":temperature,
             "presence_penalty":0
         }
-        
+
         resp = self.post(f"/openapi/v1/chat/complete", data=post_data, params=self.params)
         return resp
