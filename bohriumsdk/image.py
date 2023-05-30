@@ -1,5 +1,5 @@
-from client import Client
-from util import Util
+from bohriumsdk.client import Client
+from bohriumsdk.util import Util
 
 class Image(object):
     def __init__(

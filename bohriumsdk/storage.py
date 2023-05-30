@@ -1,6 +1,6 @@
 
-from client import Client
-from job import Job
+from bohriumsdk.client import Client
+from bohriumsdk.job import Job
 import requests
 import json
 import base64

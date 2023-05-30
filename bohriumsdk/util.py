@@ -1,6 +1,8 @@
 import rich
 from rich import print
 from rich.table import Table
+from IPython.display import display
+from jupyter_rich import JupyterConsole
 
 class Util(object):
     def __init__(self):
@@ -9,17 +11,22 @@ class Util(object):
     def nice_print_table(
             self,
             headers: list = [],
-            items: list = []
+            items: list = [],
+            env: str = "terminal"
         ) -> None:
-
-        table = Table()
+        
+        table = Table(show_header=True, header_style="bold magenta", expand=True)
         for header in headers:
-            table.add_column(header, style="bold blue")
+            table.add_column(header)
         
         for row in items:
             table.add_row(*[str(item) for item in row])
-
-        print(table)
+        if env == "notebook":
+            console = JupyterConsole()
+            console.print(table)
+            display(console) 
+        else:
+            print(table)
 
 if __name__ == '__main__':
     headers = [

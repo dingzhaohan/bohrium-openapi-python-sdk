@@ -1,5 +1,5 @@
-import client
-from util import Util
+from bohriumsdk.client import Client
+from bohriumsdk.util import Util
 class Node:
     def __init__(self, client):
         self.client = client

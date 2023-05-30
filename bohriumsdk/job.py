@@ -1,9 +1,12 @@
 import requests
-import client
+from bohriumsdk.client import Client
 import humps
 
 class Job:
-    def __init__(self, client):
+    def __init__(
+            self, 
+            client: Client = None
+        ) -> None:
         self.client = client
 
     def list_by_page(self, job_group_id, status=None, page=1, per_page=50):
@@ -94,6 +97,7 @@ class Job:
     
     def get_job_token(self, job_id):
         url = f"/openapi/v1/job/{job_id}/input/token"
+
         data = self.client.get(url=url, params=self.client.params)
         print(data)
 

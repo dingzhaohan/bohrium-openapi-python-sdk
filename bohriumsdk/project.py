@@ -1,6 +1,6 @@
 
-from client import Client
-from util import Util
+from bohriumsdk.client import Client
+from bohriumsdk.util import Util
 class Project(object):
     def __init__(
             self, 
@@ -43,12 +43,12 @@ class Project(object):
         data = self.client.get(url=url, host=host, params=params)
         return data
     
-    def print_project(self):
+    def print_project(self, env):
         data = self.list_all_project()
         headers = ['id', 'name', 'creatorEmail', 'jobCount', 'nodeCount', 'imageLimit', 'nodeLimit', 'storageLimit', 'storageUsed', 'costLimit', 'totalCost', 'userCost', 'userCostLimit']
         items = []
         for row in data:
             i = [row[k] for k in headers]
             items.append(i)
-        Util().nice_print_table(headers=headers, items=items)
+        Util().nice_print_table(headers=headers, items=items, env=env)
 
