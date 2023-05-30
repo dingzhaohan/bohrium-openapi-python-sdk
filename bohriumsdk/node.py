@@ -1,4 +1,5 @@
 import client
+from util import Util
 class Node:
     def __init__(self, client):
         self.client = client
@@ -6,7 +7,7 @@ class Node:
 
     def list_server(self, project_id):
         self.client.params["projectId"] = project_id
-        self.client.params["device"] = "vm"
+        self.client.params["device"] = "container"
         data = self.client.get('/openapi/v1/node/list', params=self.client.params)
         return data['items']
 
@@ -44,9 +45,15 @@ class Node:
         data = self.client.post(f'/openapi/v1/image/add', data=post_data, params=self.client.params)
         return data
 
+    def print_node(
+            self,
+            project_id: int = 0 
+        ) -> None:
+        data = self.list_server(project_id)
+        headers = ['nodeName','ip','nodePwd','cpu','memory','imageName', "cost",  'spec', 'createTime', 'diskSize', 'device']
+        items = []
+        for row in data:
+            i = [row[k] for k in headers]
+            items.append(i)
+        Util().nice_print_table(headers=headers, items=items)
 
-if __name__ == '__main__':
-    c = client.Client()
-    node = Node(c)
-    data = node.list_server(11481)
-    print(data)

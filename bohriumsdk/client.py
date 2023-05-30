@@ -65,28 +65,35 @@ class Client:
                 self.base_url = config.get('Credentials', 'baseUrl')
                 self.access_key = config.get('Credentials', 'accessKey')
                 self.params = {"accessKey": self.access_key}
+                self.token = ""
 
-    def post(self, url, data=None, headers=None, params=None, retry=5):
-        return self._req('POST', url, data=data, headers=headers, params=params, retry=retry)
+    def post(self, url, host="", data=None, headers=None, params=None, stream=False, retry=5):
+        return self._req('POST', url, host=host, data=data, headers=headers, params=params, stream=stream, retry=retry)
 
-    def get(self, url, data=None, headers=None, params=None, retry=5):
-        return self._req('GET', url, data=data, headers=headers, params=params, retry=retry)
+    def get(self, url, host="", data=None, headers=None, params=None, stream=False, retry=5):
+        return self._req('GET', url, host=host, data=data, headers=headers, params=params, stream=stream, retry=retry)
 
-    def _req(self, method, url, data=None, headers=None, params=None, retry=5):
-        url = urllib.parse.urljoin(self.base_url, url)
-
+    def _req(self, method, url, host="", data=None, headers=None, params=None, stream=False, retry=5):
+        if host: #in ["https://bohrium.test.dp.tech", "https://tiefblue.test.dp.tech"]:
+            url = urllib.parse.urljoin(host, url)
+        else:
+            url = urllib.parse.urljoin(self.base_url, url)
+        
         # Set Headers
-        if headers is None: header = {}
-        # if self.token: headers['Authorization'] = f'Bearer {self.token}'
+        if headers is None: headers = {}
+       
+        if self.token: headers['Authorization'] = f'Bearer {self.token}'
+     
+
         # headers['bohr-client'] = f'utility:0.0.2'
         resp_code = None
         for i in range(retry):
             resp = None
             err = ""
             if method == 'GET':
-                resp = requests.get(url, params=params, headers=headers)
+                resp = requests.get(url=url, params=params, headers=headers, stream=stream)
             if method == 'POST':
-                resp = requests.post(url=url, json=data, params=params, headers=headers)
+                resp = requests.post(url=url, json=data, params=params, headers=headers, stream=stream)
             resp_code = resp.status_code
             if not resp.ok:
                 try:
@@ -96,7 +103,9 @@ class Client:
                     pass
                 time.sleep(0.1 * i)
                 continue
+            # print(resp.text)
             result = resp.json()
+            if isinstance(result, str): return result
             if result.get('model', '') == 'gpt-35-turbo':
                 return result['choices'][0]['message']['content']
             elif result['code'] == 0:
@@ -112,13 +121,15 @@ class Client:
 
 
     def login(self):
-        email = input("Please enter Bohrium Account Email: ")
-        password = getpass.getpass(prompt="Please enter password: ")
+        # email = input("Please enter Bohrium Account Email: ")
+        # password = getpass.getpass(prompt="Please enter password: ")
+        email = "dingzh@dp.tech"
+        password = "975481DingDing"
         post_data = {
             'username': email,
             'password': password
         }
-        resp = requests.post('https://bohrium.dp.tech/account_gw/login', json=post_data).json().get("data", {})
+        resp = requests.post('https://bohrium.test.dp.tech/account_gw/login', json=post_data).json().get("data", {})
         self.token = resp.get('token', '')
         if self.token: print("Login successfully!")
         else: print("Login failed!")
@@ -126,7 +137,8 @@ class Client:
     def generate_access_key(self, name="default"):
         post_data = { "name": name }
         headers = { 'Authorization': f'Bearer {self.token}' }
-        resp = requests.post(url="https://bohrium.dp.tech/bohrapi/v1/ak/add", json=post_data, headers=headers)
+        resp = requests.post(url="https://bohrium-api.test.dp.tech/bohrapi/v1/ak/add", json=post_data, headers=headers)
+        print(resp)
         resp = resp.json().get("data", {})
         self.access_key = resp.get("accessKey", "")
         data = f"[Credentials]\nbaseUrl=https://openapi.dp.tech\naccessKey={self.access_key}"
