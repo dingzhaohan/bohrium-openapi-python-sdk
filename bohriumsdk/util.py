@@ -1,8 +1,9 @@
 import rich
 from rich import print
 from rich.table import Table
-from IPython.display import display
-from jupyter_rich import JupyterConsole
+from zipfile import ZipFile
+import glob
+import os
 
 class Util(object):
     def __init__(self):
@@ -21,13 +22,43 @@ class Util(object):
         
         for row in items:
             table.add_row(*[str(item) for item in row])
-        if env == "notebook":
-            console = JupyterConsole()
-            console.print(table)
-            display(console) 
-        else:
-            print(table)
+        # if env == "notebook":
+        #     console = JupyterConsole()
+        #     console.print(table)
+        #     display(console) 
+        # else:
+        print(table)
 
+
+    def zip_file_list(root_path, zip_filename, file_list=[]):
+        out_zip_file = os.path.join(root_path, zip_filename)
+        # print('debug: file_list', file_list)
+        zip_obj = ZipFile(out_zip_file, "w")
+        for f in file_list:
+            matched_files = os.path.join(root_path, f)
+            for ii in glob.glob(matched_files):
+                # print('debug: matched_files:ii', ii)
+                if os.path.isdir(ii):
+                    arcname = os.path.relpath(ii, start=root_path)
+                    zip_obj.write(ii, arcname)
+                    for root, dirs, files in os.walk(ii):
+                        for file in files:
+                            filename = os.path.join(root, file)
+                            arcname = os.path.relpath(filename, start=root_path)
+                            # print('debug: filename:arcname:root_path', filename, arcname, root_path)
+                            zip_obj.write(filename, arcname)
+                else:
+                    arcname = os.path.relpath(ii, start=root_path)
+                    zip_obj.write(ii, arcname)
+        zip_obj.close()
+        return out_zip_file
+
+
+    def unzip_file(zip_file, out_dir="./"):
+        obj = ZipFile(zip_file, "r")
+        for item in obj.namelist():
+            obj.extract(item, out_dir)
+            
 if __name__ == '__main__':
     headers = [
       "Job ID",
