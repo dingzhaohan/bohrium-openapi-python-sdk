@@ -59,7 +59,7 @@ class Job:
         return data
 
     def insert(self, **kwargs):
-        must_fill = ['oss_path', 'project_id', 'machine_type', 'command', 'platform', 'image_address', 'job_id', 'bohr_job_group_id']
+        must_fill = ['job_type', 'oss_path', 'project_id', 'scass_type', 'command', 'platform', 'image_address', 'job_id']
         # must_fill = ['job_type', 'oss_path', 'project_id', 'scass_type', 'command', 'platform', 'image_name']
         for each in must_fill:
             if each not in kwargs:
@@ -71,9 +71,9 @@ class Job:
             camel_data['logFiles'] = camel_data['logFile']
         if 'logFiles' in camel_data and not isinstance(camel_data['logFiles'], list):
             camel_data['logFiles'] = [camel_data['logFiles']]
-        if self.client.debug:
-            print(camel_data)
-        data = self.client.post(f"/openapi/v2/job/add", data=camel_data, params=self.client.params)
+        #if self.client.debug:
+        print(camel_data)
+        data = self.client.post(f"/openapi/v2/job/add", json=camel_data, params=self.client.params)
         return data
 
 
@@ -90,10 +90,21 @@ class Job:
         if group_id:
             data['groupId'] = group_id
         try:
-            data = self.client.post(f'/openapi/v1/job/create', data=data, params=self.client.params)
+            data = self.client.post(f'/openapi/v1/job/create', json=data, params=self.client.params)
         except Exception as e:
             raise e
         return data
+    
+    def create_job_group(self, project_id, job_group_name):
+        data = {
+            "name": job_group_name,
+            "projectId": project_id
+        }
+        try:
+            resp = self.client.post(f"/openapi/v1/job_group/add", json=data, params=self.client.params).json()
+        except Exception as e:
+            raise e
+        return resp["data"]
     
     def get_job_token(self, job_id):
         url = f"/openapi/v1/job/{job_id}/input/token"

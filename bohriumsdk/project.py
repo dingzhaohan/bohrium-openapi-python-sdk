@@ -13,7 +13,7 @@ class Project(object):
             page: int = 1,
             per_page: int = 30
         ) -> None:
-        host = "https://bohrium.test.dp.tech"
+        host = "https://bohrium.dp.tech"
         # host = "https://openapi.dp.tech/"
         url = "/account/programs"
         params = {
@@ -25,7 +25,7 @@ class Project(object):
         return data
     
     def list_all_project(self):
-        host = "https://bohrium.test.dp.tech"
+        host = "https://bohrium.dp.tech"
         url = "/brm/v1/project/list"
         params = {
             'page': 1,

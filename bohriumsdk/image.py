@@ -44,7 +44,7 @@ class Image(object):
 
 
     def delete(self, image_id):
-        host = "https://bohrium.test.dp.tech"
+        host = "https://bohrium.dp.tech"
         url = f'/brm/v1/image/del/{image_id}'
         data = self.client.get(host=host, url=url)
         

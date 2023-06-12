@@ -60,14 +60,15 @@ class Client:
             self.access_key = config.get('Credentials', 'accessKey')
             self.params = {"accessKey": self.access_key}
             self.token = ""
+            
 
-    def post(self, url, host="", data=None, headers=None, params=None, stream=False, retry=5):
-        return self._req('POST', url, host=host, data=data, headers=headers, params=params, stream=stream, retry=retry)
+    def post(self, url, host="", json=None, data=None, headers=None, params=None, stream=False, retry=5):
+        return self._req('POST', url, host=host, json=json, data=data, headers=headers, params=params, stream=stream, retry=retry)
 
-    def get(self, url, host="", data=None, headers=None, params=None, stream=False, retry=5):
-        return self._req('GET', url, host=host, data=data, headers=headers, params=params, stream=stream, retry=retry)
+    def get(self, url, host="", json=None, headers=None, params=None, stream=False, retry=5):
+        return self._req('GET', url, host=host, json=json, headers=headers, params=params, stream=stream, retry=retry)
 
-    def _req(self, method, url, host="", data=None, headers=None, params=None, stream=False, retry=5):
+    def _req(self, method, url, host="", json=None, data=None, headers=None, params=None, stream=False, retry=5):
         if host: #in ["https://bohrium.test.dp.tech", "https://tiefblue.test.dp.tech"]:
             url = urllib.parse.urljoin(host, url)
         else:
@@ -87,7 +88,7 @@ class Client:
             if method == 'GET':
                 resp = requests.get(url=url, params=params, headers=headers, stream=stream)
             if method == 'POST':
-                resp = requests.post(url=url, json=data, params=params, headers=headers, stream=stream)
+                resp = requests.post(url=url, json=json, data=data, params=params, headers=headers, stream=stream)
             resp_code = resp.status_code
             if not resp.ok:
                 try:
@@ -115,15 +116,13 @@ class Client:
 
 
     def login(self):
-        # email = input("Please enter Bohrium Account Email: ")
-        # password = getpass.getpass(prompt="Please enter password: ")
-        email = "dingzh@dp.tech"
-        password = "975481DingDing"
+        email = input("Please enter Bohrium Account Email: ")
+        password = getpass.getpass(prompt="Please enter password: ")
         post_data = {
             'username': email,
             'password': password
         }
-        resp = requests.post('https://bohrium.test.dp.tech/account_gw/login', json=post_data).json().get("data", {})
+        resp = requests.post('https://bohrium.dp.tech/account_gw/login', json=post_data).json().get("data", {})
         self.token = resp.get('token', '')
         if self.token: print("Login successfully!")
         else: print("Login failed!")
@@ -131,7 +130,7 @@ class Client:
     def generate_access_key(self, name="default"):
         post_data = { "name": name }
         headers = { 'Authorization': f'Bearer {self.token}' }
-        resp = requests.post(url="https://bohrium-api.test.dp.tech/bohrapi/v1/ak/add", json=post_data, headers=headers)
+        resp = requests.post(url="https://bohrium-api.dp.tech/bohrapi/v1/ak/add", json=post_data, headers=headers)
         print(resp)
         resp = resp.json().get("data", {})
         self.access_key = resp.get("accessKey", "")
@@ -150,5 +149,5 @@ class Client:
             "presence_penalty":0
         }
 
-        resp = self.post(f"/openapi/v1/chat/complete", data=post_data, params=self.params)
+        resp = self.post(f"/openapi/v1/chat/complete", json=post_data, params=self.params)
         return resp

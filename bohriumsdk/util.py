@@ -29,8 +29,8 @@ class Util(object):
         # else:
         print(table)
 
-
-    def zip_file_list(root_path, zip_filename, file_list=[]):
+    @classmethod
+    def zip_file_list(cls, root_path, zip_filename, file_list=[]):
         out_zip_file = os.path.join(root_path, zip_filename)
         # print('debug: file_list', file_list)
         zip_obj = ZipFile(out_zip_file, "w")
