@@ -30,7 +30,7 @@ class Storage:
         ) -> None:
         
         self.base_url = base_url
-        self.host = "https://tiefblue.dp.tech"
+        self.host = "https://tiefblue.test.dp.tech"
         self.client = client
         pass
     

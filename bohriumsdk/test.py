@@ -54,7 +54,7 @@ def test_job():
         "job_name": "test-name",
         "project_id": 154,
         "scass_type": "c2_m4_cpu",
-        "command": "echo 1asdfasdfasdfasdfasdfasdfasdf11 >> test.result;",
+        "cmd": "echo 1asdfasdfasdfasdfasdfasdfasdf11 >> test.result;",
         "log_files": ["test.result"],
         "platform": "ali",
         "image_address": "registry.dp.tech/dev/test/ubuntu:20.04-py3.10",

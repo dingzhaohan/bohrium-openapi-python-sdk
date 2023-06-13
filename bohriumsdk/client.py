@@ -50,16 +50,22 @@ class Client:
         elif api_version == "v2":
             self.config_file_location_expand = os.path.expanduser(config_file_location_v2)
             if not os.path.exists(self.config_file_location_expand):
-                print("Config File ~/.brmconfig not found! Now login to bohrium and generate it!")
-                self.login()
-                access_key_name = input("Please enter access_key name: ")
-                self.generate_access_key(access_key_name)
+                print("Config File ~/.brmconfig not found! Please visit https://bohrium.dp.tech/personal/setting and click AccessKey create button to generate it !")
+                self.access_key = input("Please enter AccessKey: ")
+                
+                # data = f"[Credentials]\nbaseUrl=https://openapi.dp.tech\naccessKey={self.access_key}"
+                data = f"[Credentials]\nbaseUrl=http://localhost:8087\naccessKey={self.access_key}"
+                with open(self.config_file_location_expand, 'w') as f:
+                    f.write(data)
+            
             config = configparser.ConfigParser()
             config.read(self.config_file_location_expand)
             self.base_url = config.get('Credentials', 'baseUrl')
             self.access_key = config.get('Credentials', 'accessKey')
+            # print(self.access_key)
             self.params = {"accessKey": self.access_key}
             self.token = ""
+            self.check_ak()
             
 
     def post(self, url, host="", json=None, data=None, headers=None, params=None, stream=False, retry=5):
@@ -68,7 +74,7 @@ class Client:
     def get(self, url, host="", json=None, headers=None, params=None, stream=False, retry=5):
         return self._req('GET', url, host=host, json=json, headers=headers, params=params, stream=stream, retry=retry)
 
-    def _req(self, method, url, host="", json=None, data=None, headers=None, params=None, stream=False, retry=5):
+    def _req(self, method, url, host="", json=None, data=None, headers=None, params=None, stream=False, retry=3):
         if host: #in ["https://bohrium.test.dp.tech", "https://tiefblue.test.dp.tech"]:
             url = urllib.parse.urljoin(host, url)
         else:
@@ -90,6 +96,10 @@ class Client:
             if method == 'POST':
                 resp = requests.post(url=url, json=json, data=data, params=params, headers=headers, stream=stream)
             resp_code = resp.status_code
+            if resp_code == 401:
+                os.remove(self.config_file_location_expand)
+                print("Config file(~/.brmconfig) AccessKey invalid! Visit https://bohrium.dp.tech/personal/setting to generate it! ")
+                exit()
             if not resp.ok:
                 try:
                     result = resp.json()
@@ -114,6 +124,10 @@ class Client:
         self.login()
         return self.token
 
+    def check_ak(self):
+        url = f"/openapi/v1/ak/get"
+        resp = self.get(url=url, params=self.params)
+        return resp
 
     def login(self):
         email = input("Please enter Bohrium Account Email: ")
