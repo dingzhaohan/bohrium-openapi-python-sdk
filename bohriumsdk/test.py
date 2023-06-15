@@ -29,7 +29,7 @@ def test_job():
     #data = j.detail()
     #print(j.log(10009242))
     data = j.create(project_id=154, name="test-env-job")
-    
+
     # print(data)
     file_path = "/Users/dingzhaohan/Downloads/out.zip"
     file_name = os.path.basename(file_path)
@@ -39,6 +39,7 @@ def test_job():
     jid = data["jobId"]
     # j.get_job_token(jid)
     object_key = os.path.join(data["storePath"], file_name)
+    print(object_key)
     res = s.upload_From_file_multi_part(object_key=object_key, file_path=file_path,  token=token, progress_bar=True)
     #res = s.upload_from_file(object_key=object_key, file_path=file_path, token=token)
     # s.download_from_file()
@@ -56,12 +57,19 @@ def test_job():
         "scass_type": "c2_m4_cpu",
         "cmd": "echo 1asdfasdfasdfasdfasdfasdfasdf11 >> test.result;",
         "log_files": ["test.result"],
+        "out_files": ["test.result"],
         "platform": "ali",
         "image_address": "registry.dp.tech/dev/test/ubuntu:20.04-py3.10",
         "job_id": jid
     }
     j.insert(**data)
     #print(a["items"][0].keys())
+
+def test_job_detail():
+    c = Client()
+    j = Job(client=c)
+    data = j.detail(10059657)
+    print(data["status"])
 
 def test_node():
     c = Client()
@@ -105,7 +113,7 @@ def test_storage():
     print(res)
     # filename = "a.txt"
     # object_key = os.path.join(resp["storePath"], filename)
-    # 
+    #
     # print(resp)
     # param = Parameter()
     # param.userMeta = {
@@ -150,7 +158,7 @@ def test_chat():
 
 
 if __name__ == "__main__":
-    test_chat()
-    # test_job()
+    # test_chat()
+    test_job_detail()
     # test_base64()
     # test_db()

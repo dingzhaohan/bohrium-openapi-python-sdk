@@ -6,6 +6,7 @@ import getpass
 import time
 import configparser
 import re
+import sys
 
 class RequestInfoException(Exception):
     pass
@@ -17,7 +18,6 @@ class Client:
             email: str = "",
             password: str = "",
             base_url_v1: str = 'https://bohrium.dp.tech',
-            base_url_v2: str = "https://openapi.dp.tech",
             token: str = "",
             debug: bool = False,
             use_config_file: bool = False,
@@ -48,21 +48,22 @@ class Client:
             else:
                 self._login()
         elif api_version == "v2":
+            self.env = os.getenv("ENV", "prod")
+
             self.config_file_location_expand = os.path.expanduser(config_file_location_v2)
             if not os.path.exists(self.config_file_location_expand):
                 print("Config File ~/.brmconfig not found! Please visit https://bohrium.dp.tech/personal/setting and click AccessKey create button to generate it !")
                 self.access_key = input("Please enter AccessKey: ")
-                
-                # data = f"[Credentials]\nbaseUrl=https://openapi.dp.tech\naccessKey={self.access_key}"
-                data = f"[Credentials]\nbaseUrl=http://localhost:8087\naccessKey={self.access_key}"
+                if self.env == "test":
+                    data = f"[Credentials]\nbaseUrl=https://openapi.test.dp.tech\naccessKey={self.access_key}"
+                else:
+                    data = f"[Credentials]\nbaseUrl=https://openapi.dp.tech\naccessKey={self.access_key}"
                 with open(self.config_file_location_expand, 'w') as f:
                     f.write(data)
-            
             config = configparser.ConfigParser()
             config.read(self.config_file_location_expand)
             self.base_url = config.get('Credentials', 'baseUrl')
             self.access_key = config.get('Credentials', 'accessKey')
-            # print(self.access_key)
             self.params = {"accessKey": self.access_key}
             self.token = ""
             self.check_ak()
@@ -99,14 +100,15 @@ class Client:
             if resp_code == 401:
                 os.remove(self.config_file_location_expand)
                 print("Config file(~/.brmconfig) AccessKey invalid! Visit https://bohrium.dp.tech/personal/setting to generate it! ")
-                exit()
+                sys.exit()
             if not resp.ok:
                 try:
                     result = resp.json()
                     err = result.get("error")
                 except:
                     pass
-                time.sleep(0.1 * i)
+                # time.sleep(0.1 * i)
+                time.sleep(20)
                 continue
             # print(resp.text)
             result = resp.json()
@@ -120,38 +122,41 @@ class Client:
                 break
         raise RequestInfoException(resp_code, url, err)
 
-    def get_token(self):
-        self.login()
-        return self.token
+    # def get_token(self):
+    #     self.login()
+    #     return self.token
 
     def check_ak(self):
         url = f"/openapi/v1/ak/get"
         resp = self.get(url=url, params=self.params)
+        if resp.get("user_id", 0) != 0:
+            pass
+            # print("AccessKey authorization passed! ")
         return resp
 
-    def login(self):
-        email = input("Please enter Bohrium Account Email: ")
-        password = getpass.getpass(prompt="Please enter password: ")
-        post_data = {
-            'username': email,
-            'password': password
-        }
-        resp = requests.post('https://bohrium.dp.tech/account_gw/login', json=post_data).json().get("data", {})
-        self.token = resp.get('token', '')
-        if self.token: print("Login successfully!")
-        else: print("Login failed!")
+    # def login(self):
+    #     email = input("Please enter Bohrium Account Email: ")
+    #     password = getpass.getpass(prompt="Please enter password: ")
+    #     post_data = {
+    #         'username': email,
+    #         'password': password
+    #     }
+    #     resp = requests.post('https://bohrium.dp.tech/account_gw/login', json=post_data).json().get("data", {})
+    #     self.token = resp.get('token', '')
+    #     if self.token: print("Login successfully!")
+    #     else: print("Login failed!")
 
-    def generate_access_key(self, name="default"):
-        post_data = { "name": name }
-        headers = { 'Authorization': f'Bearer {self.token}' }
-        resp = requests.post(url="https://bohrium-api.dp.tech/bohrapi/v1/ak/add", json=post_data, headers=headers)
-        print(resp)
-        resp = resp.json().get("data", {})
-        self.access_key = resp.get("accessKey", "")
-        data = f"[Credentials]\nbaseUrl=https://openapi.dp.tech\naccessKey={self.access_key}"
-        with open(self.config_file_location_expand, 'w') as f:
-            f.write(data)
-        return resp
+    # def generate_access_key(self, name="default"):
+    #     post_data = { "name": name }
+    #     headers = { 'Authorization': f'Bearer {self.token}' }
+    #     resp = requests.post(url="https://bohrium-api.dp.tech/bohrapi/v1/ak/add", json=post_data, headers=headers)
+    #     print(resp)
+    #     resp = resp.json().get("data", {})
+    #     self.access_key = resp.get("accessKey", "")
+    #     data = f"[Credentials]\nbaseUrl=https://openapi.dp.tech\naccessKey={self.access_key}"
+    #     with open(self.config_file_location_expand, 'w') as f:
+    #         f.write(data)
+    #     return resp
 
 
     def chat(self, prompt, temperature=0):

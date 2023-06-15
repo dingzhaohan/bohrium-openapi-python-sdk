@@ -59,7 +59,7 @@ class Job:
         return data
 
     def insert(self, **kwargs):
-        must_fill = ['job_type', 'oss_path', 'project_id', 'scass_type', 'command', 'platform', 'image_address', 'job_id']
+        must_fill = ['job_type', 'oss_path', 'project_id', 'scass_type', 'cmd', 'platform', 'image_address', 'job_id']
         # must_fill = ['job_type', 'oss_path', 'project_id', 'scass_type', 'command', 'platform', 'image_name']
         for each in must_fill:
             if each not in kwargs:
@@ -72,7 +72,7 @@ class Job:
         if 'logFiles' in camel_data and not isinstance(camel_data['logFiles'], list):
             camel_data['logFiles'] = [camel_data['logFiles']]
         #if self.client.debug:
-        print(camel_data)
+        # print(camel_data)
         data = self.client.post(f"/openapi/v2/job/add", json=camel_data, params=self.client.params)
         return data
 
@@ -88,7 +88,7 @@ class Job:
         if name:
             data['name'] = name
         if group_id:
-            data['groupId'] = group_id
+            data['bohrGroupId'] = group_id
         try:
             data = self.client.post(f'/openapi/v1/job/create', json=data, params=self.client.params)
         except Exception as e:

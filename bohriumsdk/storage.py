@@ -6,6 +6,7 @@ import json
 import base64
 import os
 from tqdm import tqdm
+import time
 
 _DEFAULT_CHUNK_SIZE = 50 * 1024 * 1024
 _DEFAULT_ITERATE_MAX_OBJECTS = 50
@@ -30,9 +31,12 @@ class Storage:
         ) -> None:
         
         self.base_url = base_url
-        self.host = "https://tiefblue.test.dp.tech"
+        if client.env == "test":
+            self.host = "https://tiefblue.test.dp.tech"
+        else:
+            self.host = "https://tiefblue.dp.tech"
         self.client = client
-        pass
+
     
     def encode_base64(
             self, 
@@ -57,7 +61,7 @@ class Storage:
 
         if parameter:
             param["option"] = parameter.__dict__
-        print(param)
+        # print(param)
         headers = {}
         headers[self.TIEFBLUE_HEADER_KEY] = self.encode_base64(param)
         headers['Authorization'] = "Bearer " + token
@@ -167,7 +171,7 @@ class Storage:
                         disable=not progress_bar)
             f.seek(0)
             if size < _DEFAULT_CHUNK_SIZE * 2:
-                print(object_key)
+                # print(object_key)
                 self.write(object_key=object_key, token=token, data=f.buffer, parameter=parameter)
                 pbar.update(100)
                 pbar.close()
@@ -189,6 +193,24 @@ class Storage:
 
         data = self.client.get()
 
+    def download_from_url(self, url, save_file):
+        ret = None
+        for retry_count in range(3):
+            try:
+                ret = requests.get(url, stream=True)
+            except Exception as e:
+                continue
+            if ret.ok:
+                break
+            else:
+                time.sleep(retry_count)
+                ret = None
+        if ret is not None:
+            ret.raise_for_status()
+            with open(save_file, "wb") as f:
+                for chunk in ret.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            ret.close()
 
     def _dump_parameter(self, parameter):
         j = json.dumps(parameter)
