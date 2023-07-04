@@ -31,10 +31,7 @@ class Storage:
         ) -> None:
         
         self.base_url = base_url
-        if client.env == "test":
-            self.host = "https://tiefblue.test.dp.tech"
-        else:
-            self.host = "https://tiefblue.dp.tech"
+        self.host = client.openapi_host.replace("openapi", "tiefblue")
         self.client = client
 
     
