@@ -51,7 +51,8 @@ class Client:
             self.openapi_host = os.getenv("OPENAPI_HOST", "https://openapi.dp.tech")
             self.config_file_location_expand = os.path.expanduser(config_file_location_v2)
             if not os.path.exists(self.config_file_location_expand):
-                print("Config File ~/.brmconfig not found! Please visit https://bohrium.dp.tech/personal/setting and click AccessKey create button to generate it !")
+                weburl = self.openapi_host.replace("openapi", "bohrium")
+                print(f"Config File ~/.brmconfig not found! Please visit {weburl}/personal/setting and click AccessKey create button to generate it !")
                 self.access_key = input("Please enter AccessKey: ")
                 data = f"[Credentials]\nbaseUrl={self.openapi_host}\naccessKey={self.access_key}"
                 with open(self.config_file_location_expand, 'w') as f:
