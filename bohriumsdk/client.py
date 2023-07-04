@@ -54,12 +54,12 @@ class Client:
                 weburl = self.openapi_host.replace("openapi", "bohrium")
                 print(f"Config File ~/.brmconfig not found! Please visit {weburl}/personal/setting and click AccessKey create button to generate it !")
                 self.access_key = input("Please enter AccessKey: ")
-                data = f"[Credentials]\nbaseUrl={self.openapi_host}\naccessKey={self.access_key}"
+                data = f"[Credentials]\naccessKey={self.access_key}"
                 with open(self.config_file_location_expand, 'w') as f:
                     f.write(data)
             config = configparser.ConfigParser()
             config.read(self.config_file_location_expand)
-            self.base_url = config.get('Credentials', 'baseUrl')
+            self.base_url = self.openapi_host
             self.access_key = config.get('Credentials', 'accessKey')
             self.params = {"accessKey": self.access_key}
             self.token = ""
