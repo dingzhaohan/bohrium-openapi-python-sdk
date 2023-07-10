@@ -14,56 +14,26 @@ class RequestInfoException(Exception):
 class Client:
     def __init__(
             self, 
-            api_version: str = 'v2',
-            email: str = "",
-            password: str = "",
-            base_url_v1: str = 'https://bohrium.dp.tech',
-            token: str = "",
-            debug: bool = False,
-            use_config_file: bool = False,
-            config_file_location_v1: str = '~/.lebesgue_config.json',
             config_file_location_v2: str ='~/.brmconfig'
         ) -> None:
-        if api_version == "v1":
-            self.debug = debug
-            self.debug = os.getenv('LBG_CLI_DEBUG_PRINT', debug)
-            self.config = {}
-            config_file_location_expand = os.path.expanduser(config_file_location_v1)
-            file_data = {}
-            self.token = ''
-            self.user_id = None
-            if use_config_file:
-                if os.path.exists(config_file_location_expand):
-                    with open(config_file_location_expand, 'r') as f:
-                        file_data = json.loads(f.read())
-                self.config['email'] = file_data.get('email', email)
-                self.config['password'] = file_data.get('password', password)
-                self.base_url = file_data.get('base_url', base_url_v1)
-            else:
-                self.config['email'] = email
-                self.config['password'] = password
-                self.base_url = base_url_v1
-            if token is not None:
-                self.token = token
-            else:
-                self._login()
-        elif api_version == "v2":
-            self.openapi_host = os.getenv("OPENAPI_HOST", "https://openapi.dp.tech")
-            self.config_file_location_expand = os.path.expanduser(config_file_location_v2)
-            if not os.path.exists(self.config_file_location_expand):
-                weburl = self.openapi_host.replace("openapi", "bohrium")
-                print(f"Config File ~/.brmconfig not found! Please visit {weburl}/personal/setting and click AccessKey create button to generate it !")
-                self.access_key = input("Please enter AccessKey: ")
-                data = f"[Credentials]\naccessKey={self.access_key}"
-                with open(self.config_file_location_expand, 'w') as f:
-                    f.write(data)
-            config = configparser.ConfigParser()
-            config.read(self.config_file_location_expand)
-            self.base_url = self.openapi_host
-            self.access_key = config.get('Credentials', 'accessKey')
-            self.params = {"accessKey": self.access_key}
-            self.token = ""
-            self.check_ak()
+
+        self.openapi_host = os.getenv("OPENAPI_HOST", "https://openapi.dp.tech")
+        self.config_file_location_expand = os.path.expanduser(config_file_location_v2)
+        self.ticket = os.environ.get("BHOR_TICKET", "")
+        if not os.path.exists(self.config_file_location_expand) and self.ticket == "":
+            weburl = self.openapi_host.replace("openapi", "bohrium")
+            print(f"Config File ~/.brmconfig not found! Please visit {weburl}/personal/setting and click AccessKey create button to generate it !")
+            self.access_key = input("Please enter AccessKey: ")
+            data = f"[Credentials]\naccessKey={self.access_key}"
+            with open(self.config_file_location_expand, 'w') as f:
+                f.write(data)
+        config = configparser.ConfigParser()
+        config.read(self.config_file_location_expand)
+        self.base_url = self.openapi_host
+        self.access_key = config.get('Credentials', 'accessKey')
+        self.params = {"accessKey": self.access_key}
+        self.token = ""
+        self.check_ak()
             
 
     def post(self, url, host="", json=None, data=None, headers=None, params=None, stream=False, retry=5):
@@ -82,8 +52,8 @@ class Client:
         if headers is None: headers = {}
        
         if self.token: headers['Authorization'] = f'Bearer {self.token}'
-     
-
+        if self.ticket: headers['Brm-Ticket'] = self.ticket
+        
         # headers['bohr-client'] = f'utility:0.0.2'
         resp_code = None
         for i in range(retry):
