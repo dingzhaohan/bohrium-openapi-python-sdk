@@ -1,6 +1,5 @@
 
 from bohriumsdk.client import Client
-from bohriumsdk.job import Job
 import requests
 import json
 import base64
@@ -31,7 +30,7 @@ class Storage:
         ) -> None:
         
         self.base_url = base_url
-        self.host = client.openapi_host.replace("openapi", "tiefblue")
+        self.host = client.host.replace("openapi", "tiefblue")
         self.client = client
 
     
