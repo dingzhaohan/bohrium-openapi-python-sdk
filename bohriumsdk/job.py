@@ -88,7 +88,7 @@ class Job:
         if name:
             data['name'] = name
         if group_id:
-            data['bohrGroupId'] = group_id
+            data['bohrJobGroupId'] = group_id
         try:
             data = self.client.post(f'/openapi/v1/job/create', json=data, params=self.client.params)
         except Exception as e:
