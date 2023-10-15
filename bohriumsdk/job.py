@@ -140,7 +140,7 @@ class Job:
             log_files=[],
             out_files=[]):
         job_params = {"input_file_type": 2,"input_file_method": 4}
-        data = self.create(project_id=project_id, name=job_name)
+        data = self.create(project_id=project_id, name=job_name, group_id=job_group_id)
 
         if work_dir != '':
             if not os.path.exists(work_dir):
@@ -163,7 +163,6 @@ class Job:
         job_params['log_files'] = log_files
         job_params['out_files'] = out_files
         job_params['job_type'] = 'container'
-        job_params['bohr_job_group_id'] = job_group_id
         return self.insert(**job_params)
     
     def download(self, job_id, save_path):
