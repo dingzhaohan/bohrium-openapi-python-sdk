@@ -134,6 +134,7 @@ class Job:
             machine_type,
             cmd,
             image_address,#镜像地址
+            job_group_id=0,
             work_dir='',
             platform='ali',
             log_files=[],
@@ -162,6 +163,7 @@ class Job:
         job_params['log_files'] = log_files
         job_params['out_files'] = out_files
         job_params['job_type'] = 'container'
+        job_params['job_group_id'] = job_group_id
         return self.insert(**job_params)
     
     def download(self, job_id, save_path):
