@@ -101,10 +101,10 @@ class Job:
             "projectId": project_id
         }
         try:
-            resp = self.client.post(f"/openapi/v1/job_group/add", json=data, params=self.client.params).json()
+            data = self.client.post(f"/openapi/v1/job_group/add", json=data, params=self.client.params)
         except Exception as e:
             raise e
-        return resp["data"]
+        return data
     
     def get_job_token(self, job_id):
         url = f"/openapi/v1/job/{job_id}/input/token"
@@ -163,7 +163,7 @@ class Job:
         job_params['log_files'] = log_files
         job_params['out_files'] = out_files
         job_params['job_type'] = 'container'
-        job_params['job_group_id'] = job_group_id
+        job_params['bohr_job_group_id'] = job_group_id
         return self.insert(**job_params)
     
     def download(self, job_id, save_path):
