@@ -57,7 +57,10 @@ class Job:
         data = self.client.post(f'/openapi/v1/job/kill/{job_id}', params=self.client.params)
         return data
     
-    def log(self, job_id):
+    def log(self, job_id, log_file="STDOUTERR", page=-1, page_size=8192):
+        self.client.params['logFile'] = log_file
+        self.client.params['page'] = page
+        self.client.params['pageSize'] = page_size
         data = self.client.get(f'/openapi/v1/job/{job_id}/log', params=self.client.params)
         return data
 
